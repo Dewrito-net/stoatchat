@@ -37,7 +37,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    #if: github.event_name != 'pull_request'
     name: Publish Docker images
     steps:
       # Configure build environment
