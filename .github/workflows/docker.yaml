@@ -14,7 +14,7 @@ permissions:
 jobs:
   base:
     name: Test base image build
-    runs-on: arc-runner-set
+    runs-on: ubuntu-latest
     #if: github.event_name == 'pull_request'
     steps:
       # Configure build environment
