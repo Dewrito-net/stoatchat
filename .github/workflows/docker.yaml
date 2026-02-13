@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   base:
+    timeout-minutes: 360
     name: Test base image build
     runs-on: ubuntu-latest
     #if: github.event_name == 'pull_request'
@@ -35,7 +36,7 @@ jobs:
           cache-to: type=gha,scope=buildx-base-multi-arch,mode=max
 
   publish:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     name: Publish Docker images
     steps:
