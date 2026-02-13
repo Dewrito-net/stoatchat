@@ -7,15 +7,12 @@ on:
   pull_request:
     paths:
       - "Dockerfile"
-  workflow_dispatch:
+
 
 permissions:
   contents: read
   packages: write
 
-concurrency:
-  group: ${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   base:
@@ -36,12 +33,12 @@ jobs:
           context: .
           push: false
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/${{ github.repository_owner }}/base:latest
+          tags: ghcr.io/dewrito-net/base:latest
           cache-from: type=gha,scope=buildx-base-multi-arch
           cache-to: type=gha,scope=buildx-base-multi-arch,mode=max
 
   publish:
-    runs-on: arc-runner-set
+    runs-on: self-hosted
     if: github.event_name != 'pull_request'
     name: Publish Docker images
     steps:
@@ -84,7 +81,7 @@ jobs:
           file: crates/delta/Dockerfile
           tags: ${{ steps.meta-delta.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-delta.outputs.labels }}
 
       # dewrito-net/events
@@ -103,7 +100,7 @@ jobs:
           file: crates/bonfire/Dockerfile
           tags: ${{ steps.meta-bonfire.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-bonfire.outputs.labels }}
 
       # dewrito-net/file-server
@@ -122,7 +119,7 @@ jobs:
           file: crates/services/autumn/Dockerfile
           tags: ${{ steps.meta-autumn.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-autumn.outputs.labels }}
 
       # dewrito-net/proxy
@@ -141,7 +138,7 @@ jobs:
           file: crates/services/january/Dockerfile
           tags: ${{ steps.meta-january.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-january.outputs.labels }}
 
       # dewrito-net/gifbox
@@ -160,7 +157,7 @@ jobs:
           file: crates/services/gifbox/Dockerfile
           tags: ${{ steps.meta-gifbox.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-gifbox.outputs.labels }}
 
       # dewrito-net/crond
@@ -179,7 +176,7 @@ jobs:
           file: crates/daemons/crond/Dockerfile
           tags: ${{ steps.meta-crond.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-crond.outputs.labels }}
 
       # dewrito-net/pushd
@@ -198,7 +195,7 @@ jobs:
           file: crates/daemons/pushd/Dockerfile
           tags: ${{ steps.meta-pushd.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-pushd.outputs.labels }}
 
       # dewrito-net/voice-ingress
@@ -217,5 +214,5 @@ jobs:
           file: crates/daemons/voice-ingress/Dockerfile
           tags: ${{ steps.meta-voice-ingress.outputs.tags }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/base:latest
+            BASE_IMAGE=ghcr.io/dewrito-net/base:latest
           labels: ${{ steps.meta-voice-ingress.outputs.labels }}
