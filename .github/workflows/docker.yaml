@@ -2,11 +2,8 @@ name: Docker Test & Publish
 
 on:
   push:
-    tags:
-      - "*"
-  pull_request:
-    paths:
-      - "Dockerfile"
+    branches:
+      - main
 
 
 permissions:
