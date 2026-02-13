@@ -68,7 +68,7 @@ jobs:
 
     strategy:
       matrix:
-        project: [delta, bonfire, autumn , january , gifbox, crond, pushd, voice-ingress]
+        project: [delta, bonfire, autumn ]
 
     steps:
       - name: Checkout
