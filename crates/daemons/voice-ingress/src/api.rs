@@ -67,6 +67,12 @@ pub async fn ingress(
             let voice_state =
                 create_voice_state(channel_id, channel.server(), user_id, joined_at).await?;
 
+            // Publish to server topic for server channels (all members receive it),
+            // or to channel topic for DMs/groups.
+            let publish_topic = channel.server()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| channel_id.to_string());
+
             // Only publish one event when a user is moved from one channel to another.
             if let Some(moved_from) = get_user_moved_to_voice(channel_id, user_id).await? {
                 EventV1::VoiceChannelMove {
@@ -75,14 +81,14 @@ pub async fn ingress(
                     to: channel_id.to_string(),
                     state: voice_state,
                 }
-                .p(channel_id.to_string())
+                .p(publish_topic)
                 .await;
             } else {
                 EventV1::VoiceChannelJoin {
                     id: channel_id.to_string(),
                     state: voice_state,
                 }
-                .p(channel_id.to_string())
+                .p(publish_topic)
                 .await;
             };
 
@@ -146,11 +152,15 @@ pub async fn ingress(
                 .await?
                 .is_none()
             {
+                let publish_topic = channel.server()
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| channel_id.clone());
+
                 EventV1::VoiceChannelLeave {
                     id: channel_id.clone(),
                     user: user_id.clone(),
                 }
-                .p(channel_id.clone())
+                .p(publish_topic)
                 .await;
             };
 
@@ -264,7 +274,9 @@ pub async fn ingress(
                 channel_id: channel_id.clone(),
                 data: partial,
             }
-            .p(channel_id.clone())
+            .p(channel.server()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| channel_id.clone()))
             .await;
         }
         _ => {}
