@@ -23,7 +23,7 @@ env:
 jobs:
   base:
     name: Build base image
-    runs-on: ubuntu-latest
+    runs-on: arc-runner-set
 
     permissions:
       contents: read
