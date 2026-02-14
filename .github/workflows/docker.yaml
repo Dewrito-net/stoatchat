@@ -47,10 +47,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      #clean cache
-      - name: Clean cargo cache
-         run: cargo clean
-
       # Build the image
       - name: Build base image
         uses: docker/build-push-action@v5
