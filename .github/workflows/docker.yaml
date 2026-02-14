@@ -23,7 +23,7 @@ env:
 jobs:
   base:
     name: Build base image
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     timeout-minutes: 200
 
     permissions:
