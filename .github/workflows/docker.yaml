@@ -1,5 +1,8 @@
 name: Docker Image CI
 
+env:
+  IMAGE_NAME: ${{ github.repository_owner }}
+  
 on:
   push:
     branches: [ "main" ]
@@ -11,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set image name to lowercase
+      run: echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> $GITHUB_ENV
+      
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -23,8 +29,8 @@ jobs:
 
     - name: Build Docker image (no buildx)
       run: |
-        docker build -t ghcr.io/${{ github.repository_owner }}/stoatchat:latest .
+        docker build -t ghcr.io/${{ env.IMAGE_NAME_LC }}/stoatchat:latest .
 
     - name: Push Docker image
       run: |
-        docker push ghcr.io/${{ github.repository_owner }}/stoatchat:latest
+        docker push ghcr.io/${{ env.IMAGE_NAME_LC }}/stoatchat:latest
