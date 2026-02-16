@@ -1,8 +1,8 @@
 name: Rust build, test, and generate specification
 
 on:
-  push:
-    branches: [main]
+  #push:
+  #  branches: [main]
   pull_request:
 
 concurrency:

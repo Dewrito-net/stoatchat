@@ -20,7 +20,7 @@ concurrency:
 jobs:
   base:
     name: Test base image build
-    runs-on: arc-runner-set
+    runs-on: self-hosted
     if: github.event_name == 'pull_request'
     steps:
       # Configure build environment

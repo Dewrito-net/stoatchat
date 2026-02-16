@@ -1,8 +1,8 @@
 name: Documentation (test)
 
 on:
-  pull_request:
-
+  # pull_request:
+  workflow_dispatch:
 jobs:
   test-deploy:
     name: Test deployment
