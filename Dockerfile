@@ -1,17 +1,22 @@
 # Build Stage
-FROM --platform="${BUILDPLATFORM}" rust:1.92.0-slim-bookworm
+FROM --platform="${BUILDPLATFORM}" rust:1.92.0-slim-bookworm AS builder
 USER 0:0
 WORKDIR /home/rust/src
 
 ARG TARGETARCH
+ARG BUILDARCH
 
 # Install build requirements
-RUN dpkg --add-architecture "${TARGETARCH}"
 RUN apt-get update && \
-    apt-get install -y \
-    make \
-    pkg-config \
-    libssl-dev:"${TARGETARCH}"
+    apt-get install -y make pkg-config && \
+    if [ "${TARGETARCH}" != "${BUILDARCH}" ]; then \
+        dpkg --add-architecture "${TARGETARCH}" && \
+        apt-get update && \
+        apt-get install -y libssl-dev:"${TARGETARCH}" ; \
+    else \
+        apt-get install -y libssl-dev ; \
+    fi
+
 COPY scripts/build-image-layer.sh /tmp/
 RUN sh /tmp/build-image-layer.sh tools
 
@@ -40,3 +45,66 @@ RUN sh /tmp/build-image-layer.sh deps
 # Build all apps
 COPY crates ./crates
 RUN sh /tmp/build-image-layer.sh apps
+
+# Helper for uname
+FROM debian:12-slim AS debian
+
+# Final images
+FROM gcr.io/distroless/cc-debian12:nonroot AS base
+COPY --from=builder /home/rust/src/target/release/ /usr/local/bin/
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS api
+COPY --from=builder /home/rust/src/target/release/revolt-delta ./
+COPY --from=debian /usr/bin/uname /usr/bin/uname
+EXPOSE 14702
+ENV ROCKET_ADDRESS=0.0.0.0
+USER nonroot
+CMD ["./revolt-delta"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS events
+COPY --from=builder /home/rust/src/target/release/revolt-bonfire ./
+COPY --from=debian /usr/bin/uname /usr/bin/uname
+EXPOSE 14703
+USER nonroot
+CMD ["./revolt-bonfire"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS file-server
+COPY --from=builder /home/rust/src/target/release/revolt-autumn ./
+COPY --from=mwader/static-ffmpeg:7.0.2 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.0.2 /ffprobe /usr/local/bin/
+COPY --from=debian /usr/bin/uname /usr/bin/uname
+EXPOSE 14704
+USER nonroot
+CMD ["./revolt-autumn"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS proxy
+COPY --from=builder /home/rust/src/target/release/revolt-january ./
+COPY --from=mwader/static-ffmpeg:7.0.2 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.0.2 /ffprobe /usr/local/bin/
+COPY --from=debian /usr/bin/uname /usr/bin/uname
+EXPOSE 14705
+USER nonroot
+CMD ["./revolt-january"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS gifbox
+COPY --from=builder /home/rust/src/target/release/revolt-gifbox ./
+EXPOSE 14706
+USER nonroot
+CMD ["./revolt-gifbox"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS crond
+COPY --from=builder /home/rust/src/target/release/revolt-crond ./
+USER nonroot
+CMD ["./revolt-crond"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS pushd
+COPY --from=builder /home/rust/src/target/release/revolt-pushd ./
+COPY --from=debian /usr/bin/uname /usr/bin/uname
+USER nonroot
+CMD ["./revolt-pushd"]
+
+FROM gcr.io/distroless/cc-debian12:nonroot AS voice-ingress
+COPY --from=builder /home/rust/src/target/release/revolt-voice-ingress ./
+COPY --from=debian /usr/bin/uname /usr/bin/uname
+USER nonroot
+CMD ["./revolt-voice-ingress"]

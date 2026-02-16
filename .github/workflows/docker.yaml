@@ -18,8 +18,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  base:
-    name: Test base image build
+  build:
+    name: Build & Publish
     runs-on: self-hosted
     steps:
       # Configure build environment
@@ -30,194 +30,153 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Build the image
-      - name: Build base image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: false
-          platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/${{ env.REPO_OWNER }}/base:latest
-          cache-from: type=gha,scope=buildx-base-multi-arch
-          cache-to: type=gha,scope=buildx-base-multi-arch,mode=max
-
-  publish:
-    runs-on: self-hosted
-    name: Publish Docker images
-    steps:
-      # Configure build environment
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Lowercase repo owner
-        run: echo "REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      # Authenticate with Docker Hub and GHCR
+      # Authenticate with GHCR
       - name: Login to Github Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build the image
-      - name: Build base image
+      # Build and push all images
+      # We use the same context and Dockerfile for all, sharing the 'builder' stage cache.
+      
+      - name: Build Base
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: base
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/${{ env.REPO_OWNER }}/base:latest
+          cache-from: type=gha,scope=stoatchat
+          cache-to: type=gha,scope=stoatchat,mode=max
 
-      # stoatchat/api
-      - name: Docker meta
-        id: meta-delta
+      - name: Meta API
+        id: meta-api
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/api
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/api
+      - name: Build API
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: api
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/delta/Dockerfile
-          tags: ${{ steps.meta-delta.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
-          labels: ${{ steps.meta-delta.outputs.labels }}
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/events
-      - name: Docker meta
-        id: meta-bonfire
+      - name: Meta Events
+        id: meta-events
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/events
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/events
+      - name: Build Events
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: events
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/bonfire/Dockerfile
-          tags: ${{ steps.meta-bonfire.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
-          labels: ${{ steps.meta-bonfire.outputs.labels }}
+          tags: ${{ steps.meta-events.outputs.tags }}
+          labels: ${{ steps.meta-events.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/file-server
-      - name: Docker meta
-        id: meta-autumn
+      - name: Meta File Server
+        id: meta-file-server
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/file-server
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/file-server
+      - name: Build File Server
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: file-server
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/services/autumn/Dockerfile
-          tags: ${{ steps.meta-autumn.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
-          labels: ${{ steps.meta-autumn.outputs.labels }}
+          tags: ${{ steps.meta-file-server.outputs.tags }}
+          labels: ${{ steps.meta-file-server.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/proxy
-      - name: Docker meta
-        id: meta-january
+      - name: Meta Proxy
+        id: meta-proxy
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/proxy
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/proxy
+      - name: Build Proxy
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: proxy
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/services/january/Dockerfile
-          tags: ${{ steps.meta-january.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
-          labels: ${{ steps.meta-january.outputs.labels }}
+          tags: ${{ steps.meta-proxy.outputs.tags }}
+          labels: ${{ steps.meta-proxy.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/gifbox
-      - name: Docker meta
+      - name: Meta Gifbox
         id: meta-gifbox
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/gifbox
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/gifbox
+      - name: Build Gifbox
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: gifbox
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/services/gifbox/Dockerfile
           tags: ${{ steps.meta-gifbox.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
           labels: ${{ steps.meta-gifbox.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/crond
-      - name: Docker meta
+      - name: Meta Crond
         id: meta-crond
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/crond
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/crond
+      - name: Build Crond
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: crond
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/daemons/crond/Dockerfile
           tags: ${{ steps.meta-crond.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
           labels: ${{ steps.meta-crond.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/pushd
-      - name: Docker meta
+      - name: Meta Pushd
         id: meta-pushd
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/pushd
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/pushd
+      - name: Build Pushd
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: pushd
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/daemons/pushd/Dockerfile
           tags: ${{ steps.meta-pushd.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
           labels: ${{ steps.meta-pushd.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
 
-      # stoatchat/voice-ingress
-      - name: Docker meta
+      - name: Meta Voice Ingress
         id: meta-voice-ingress
         uses: docker/metadata-action@v4
         with:
-          images: |
-            ghcr.io/${{ env.REPO_OWNER }}/voice-ingress
-      - name: Publish
+          images: ghcr.io/${{ env.REPO_OWNER }}/voice-ingress
+      - name: Build Voice Ingress
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
+          target: voice-ingress
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
-          file: crates/daemons/voice-ingress/Dockerfile
           tags: ${{ steps.meta-voice-ingress.outputs.tags }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/${{ env.REPO_OWNER }}/base:latest
           labels: ${{ steps.meta-voice-ingress.outputs.labels }}
+          cache-from: type=gha,scope=stoatchat
