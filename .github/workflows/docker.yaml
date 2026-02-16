@@ -21,7 +21,6 @@ jobs:
   base:
     name: Test base image build
     runs-on: self-hosted
-    if: github.event_name == 'pull_request'
     steps:
       # Configure build environment
       - name: Checkout
@@ -41,8 +40,7 @@ jobs:
           cache-to: type=gha,scope=buildx-base-multi-arch,mode=max
 
   publish:
-    runs-on: arc-runner-set
-    if: github.event_name != 'pull_request'
+    runs-on: self-hosted
     name: Publish Docker images
     steps:
       # Configure build environment
