@@ -13,32 +13,35 @@ if [ $# -eq 0 ]; then
 fi
 
 DEBUG=$2
+REPO_OWNER=${REPO_OWNER:-stoatchat}
+REPO_OWNER=${REPO_OWNER,,}
+
 if [ "$DEBUG" = "true" ]; then
   echo "[profile.release]" >> Cargo.toml
   echo "debug = true" >> Cargo.toml
 fi
 
 TAG=$1-debug
-echo "Building images, will tag for ghcr.io with $TAG!"
-docker build -t ghcr.io/stoatchat/base:latest -f Dockerfile.useCurrentArch .
-docker build -t ghcr.io/stoatchat/server:$TAG - < crates/delta/Dockerfile
-docker build -t ghcr.io/stoatchat/bonfire:$TAG - < crates/bonfire/Dockerfile
-docker build -t ghcr.io/stoatchat/autumn:$TAG - < crates/services/autumn/Dockerfile
-docker build -t ghcr.io/stoatchat/january:$TAG - < crates/services/january/Dockerfile
-docker build -t ghcr.io/stoatchat/gifbox:$TAG - < crates/services/gifbox/Dockerfile
-docker build -t ghcr.io/stoatchat/crond:$TAG - < crates/daemons/crond/Dockerfile
-docker build -t ghcr.io/stoatchat/pushd:$TAG - < crates/daemons/pushd/Dockerfile
-docker build -t ghcr.io/stoatchat/voice-ingress:$TAG - < crates/daemons/voice-ingress/Dockerfile
+echo "Building images, will tag for ghcr.io/${REPO_OWNER} with $TAG!"
+docker build -t ghcr.io/${REPO_OWNER}/base:latest -f Dockerfile.useCurrentArch .
+docker build -t ghcr.io/${REPO_OWNER}/server:$TAG - < crates/delta/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/bonfire:$TAG - < crates/bonfire/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/autumn:$TAG - < crates/services/autumn/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/january:$TAG - < crates/services/january/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/gifbox:$TAG - < crates/services/gifbox/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/crond:$TAG - < crates/daemons/crond/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/pushd:$TAG - < crates/daemons/pushd/Dockerfile
+docker build -t ghcr.io/${REPO_OWNER}/voice-ingress:$TAG - < crates/daemons/voice-ingress/Dockerfile
 
 if [ "$DEBUG" = "true" ]; then
   git restore Cargo.toml
 fi
 
-docker push ghcr.io/stoatchat/server:$TAG
-docker push ghcr.io/stoatchat/bonfire:$TAG
-docker push ghcr.io/stoatchat/autumn:$TAG
-docker push ghcr.io/stoatchat/january:$TAG
-docker push ghcr.io/stoatchat/gifbox:$TAG
-docker push ghcr.io/stoatchat/crond:$TAG
-docker push ghcr.io/stoatchat/pushd:$TAG
-docker push ghcr.io/stoatchat/voice-ingress:$TAG
+docker push ghcr.io/${REPO_OWNER}/server:$TAG
+docker push ghcr.io/${REPO_OWNER}/bonfire:$TAG
+docker push ghcr.io/${REPO_OWNER}/autumn:$TAG
+docker push ghcr.io/${REPO_OWNER}/january:$TAG
+docker push ghcr.io/${REPO_OWNER}/gifbox:$TAG
+docker push ghcr.io/${REPO_OWNER}/crond:$TAG
+docker push ghcr.io/${REPO_OWNER}/pushd:$TAG
+docker push ghcr.io/${REPO_OWNER}/voice-ingress:$TAG
