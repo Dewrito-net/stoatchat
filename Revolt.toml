@@ -1,6 +1,8 @@
 # ⚠️ This configuration is intended for development environment.
 # If you'd like to override anything, create a Revolt.overrides.toml
 
+gifbox_attribution = ""
+
 [database]
 # MongoDB connection URL
 # Defaults to the container name specified in self-hosted
@@ -32,6 +34,9 @@ voso_legacy_ws = ""
 worldwide = "ws://local.revolt.chat:14706"
 
 [api]
+
+[api.security]
+tenor_key = ""
 
 [api.smtp]
 # Email server configuration for verification

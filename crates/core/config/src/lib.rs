@@ -117,6 +117,7 @@ static CONFIG_BUILDER: Lazy<RwLock<Config>> = Lazy::new(|| {
 pub struct Database {
     pub mongodb: String,
     pub redis: String,
+    pub redis_pubsub: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -134,6 +135,7 @@ pub struct Hosts {
     pub events: String,
     pub autumn: String,
     pub january: String,
+    pub gifbox: String,
     pub livekit: HashMap<String, String>,
 }
 
@@ -198,6 +200,7 @@ pub struct ApiSecurity {
     pub captcha: ApiSecurityCaptcha,
     pub trust_cloudflare: bool,
     pub easypwned: String,
+	// key for supported gif search service (currently https://klipy.com)
     pub tenor_key: String,
 }
 
@@ -417,6 +420,7 @@ pub struct Settings {
     pub files: Files,
     pub features: Features,
     pub sentry: Sentry,
+    pub gifbox_attribution: String,
     pub production: bool,
 }
 
