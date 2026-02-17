@@ -13,6 +13,9 @@ if [ $# -eq 0 ]; then
 fi
 
 DEBUG=$2
+REPO_OWNER=${REPO_OWNER:-stoatchat}
+REPO_OWNER=${REPO_OWNER,,}
+
 if [ "$DEBUG" = "true" ]; then
   echo "[profile.release]" >> Cargo.toml
   echo "debug = true" >> Cargo.toml

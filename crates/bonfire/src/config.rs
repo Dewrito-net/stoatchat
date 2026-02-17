@@ -162,7 +162,7 @@ impl handshake::server::Callback for WebsocketHandshakeCallback {
                 "ready" => {
                     // Re-enable all the fields the client specifies
                     if let Some(captures) = READY_PAYLOAD_FIELD_REGEX.captures(value) {
-                        if let Some(field) = captures.get(0) {
+                        if let Some(field) = captures.get(1) {
                             match field.as_str() {
                                 "users" => ready_payload_fields.users = true,
                                 "servers" => ready_payload_fields.servers = true,
@@ -172,7 +172,7 @@ impl handshake::server::Callback for WebsocketHandshakeCallback {
                                 "voice_states" => ready_payload_fields.voice_states = true,
                                 "channel_unreads" => ready_payload_fields.channel_unreads = true,
                                 "user_settings" => {
-                                    if let Some(subkey) = captures.get(1) {
+                                    if let Some(subkey) = captures.get(2) {
                                         ready_payload_fields
                                             .user_settings
                                             .push(subkey.as_str().to_string());
