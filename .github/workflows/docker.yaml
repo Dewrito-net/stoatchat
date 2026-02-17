@@ -20,7 +20,7 @@ concurrency:
 jobs:
   build:
     name: Build & Publish
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04-arm
     steps:
       # Configure build environment
       - name: Checkout
