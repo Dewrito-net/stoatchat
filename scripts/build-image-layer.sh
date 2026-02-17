@@ -86,9 +86,9 @@ apps() {
     crates/core/ratelimits/src/lib.rs
   
   if [ -z "$TARGETARCH" ]; then
-    cargo build -j 10 --locked --release
+    cargo build -j 2 --locked --release
   else
-    cargo build -j 10 --locked --release --target "${BUILD_TARGET}"
+    cargo build -j 2 --locked --release --target "${BUILD_TARGET}"
     mv target _target && mv _target/"${BUILD_TARGET}" target
   fi
 }
