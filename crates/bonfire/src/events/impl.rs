@@ -667,6 +667,15 @@ impl State {
                 }
             }
 
+            // Voice channel events - forward to WebSocket
+            EventV1::VoiceChannelJoin { .. }
+            | EventV1::VoiceChannelLeave { .. }
+            | EventV1::VoiceChannelMove { .. }
+            | EventV1::UserVoiceStateUpdate { .. } => {
+                // These events are published to the channel topic and subscribed to automatically.
+                // No special handling needed, just forward to the client.
+            }
+
             _ => {}
         }
 
