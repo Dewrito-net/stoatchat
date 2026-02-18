@@ -17,6 +17,7 @@ mod servers;
 mod sync;
 mod users;
 mod webhooks;
+mod discover;
 
 pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
     let settings = OpenApiSettings::default();
@@ -30,6 +31,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/bots" => bots::routes(),
             "/channels" => channels::routes(),
             "/servers" => servers::routes(),
+            "/discover" => discover::routes(),
             "/invites" => invites::routes(),
             "/custom" => customisation::routes(),
             "/safety" => safety::routes(),
@@ -51,6 +53,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/bots" => bots::routes(),
             "/channels" => channels::routes(),
             "/servers" => servers::routes(),
+            "/discover" => discover::routes(),
             "/invites" => invites::routes(),
             "/custom" => customisation::routes(),
             "/safety" => safety::routes(),
@@ -73,6 +76,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/bots" => bots::routes(),
             "/channels" => channels::routes(),
             "/servers" => servers::routes(),
+            "/discover" => discover::routes(),
             "/invites" => invites::routes(),
             "/custom" => customisation::routes(),
             "/safety" => safety::routes(),
@@ -93,6 +97,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/bots" => bots::routes(),
             "/channels" => channels::routes(),
             "/servers" => servers::routes(),
+            "/discover" => discover::routes(),
             "/invites" => invites::routes(),
             "/custom" => customisation::routes(),
             "/safety" => safety::routes(),
